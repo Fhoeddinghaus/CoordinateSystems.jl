@@ -1,0 +1,4 @@
+name = "CoordinateSystems"
+uuid = "d6291028-476d-4297-b3a8-76c3a4d31e5f"
+authors = ["Felix Höddinghaus <info@xefli.de>"]
+version = "0.1.0"
