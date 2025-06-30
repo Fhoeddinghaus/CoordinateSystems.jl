@@ -15,6 +15,7 @@ include("macros.jl")
 include("types.jl")
 include("helpers.jl")
 include("base-ext-convert.jl")
+include("base-ext.jl")
 
 
 end # module CoordinateSystems
