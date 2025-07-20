@@ -1,8 +1,18 @@
 # other extensions to Base
+"""
+    function Base.length(x::Coordinates{T, dim}) where {T <: Real, dim}
+
+Returns the dimension of the coordinate system represented by `x`, which is an instance of `Coordinates{T, dim}`.
+"""
 function Base.length(x::Coordinates{T, dim}) where {T <: Real, dim}
     return dim
 end
 
+"""
+    function Base.getproperty(x::CartesianCoordinates{T, dim}, i::Symbol) where {T <: Real, dim}
+
+Returns the value of the property `i` from the `CartesianCoordinates{T, dim}` instance `x`. The properties include `:dim`, `:xs`, and coordinate values like `:x`, `:y`, `:z`, or `:xN` for dimensions greater than 3.
+"""
 function Base.getproperty(x::CartesianCoordinates{T, dim}, i::Symbol) where {T <: Real, dim}
     xs = getfield(x, :xs)
     
@@ -41,6 +51,11 @@ function Base.getproperty(x::CartesianCoordinates{T, dim}, i::Symbol) where {T <
     return nothing
 end
 
+"""
+    function Base.setproperty!(x::CartesianCoordinates{T, dim}, i::Symbol, val) where {T <: Real, dim}
+
+Sets the property `i` of the `CartesianCoordinates{T, dim}` instance `x` to the value `val`. The properties include `:dim`, `:xs`, and coordinate values like `:x`, `:y`, `:z`, or `:xN` for dimensions greater than 3. If an invalid property is specified, an error is raised.
+"""
 function Base.setproperty!(x::CartesianCoordinates{T, dim}, i::Symbol, val) where {T <: Real, dim}
     if i == :dim
         error("Dimension cannot be changed directly. Use resize! or trunc_dim.")
@@ -77,6 +92,11 @@ function Base.setproperty!(x::CartesianCoordinates{T, dim}, i::Symbol, val) wher
     return nothing
 end
 
+"""
+    function Base.getindex(x::CartesianCoordinates{T, dim}, keys::Union{Int, Symbol, AbstractVector{Int}})  where {T <: Real, dim}
+
+Returns the value of the coordinate or property specified by `keys` from the `CartesianCoordinates{T, dim}` instance `x`. The `keys` can be an integer index, a symbol representing a property, or an array of indices.
+"""
 function Base.getindex(x::CartesianCoordinates{T, dim}, keys::Union{Int, Symbol, AbstractVector{Int}})  where {T <: Real, dim}
     if keys isa AbstractVector
         return x.xs[keys]
@@ -88,6 +108,11 @@ function Base.getindex(x::CartesianCoordinates{T, dim}, keys::Union{Int, Symbol,
     end
 end
 
+"""
+    function Base.setindex!(x::CartesianCoordinates{T, dim}, val, keys::Union{Int, Symbol, AbstractVector{Int}}) where {T <: Real, dim}
+
+Sets the value of the coordinate or property specified by `keys` in the `CartesianCoordinates{T, dim}` instance `x` to `val`. The `keys` can be an integer index, a symbol representing a property, or an array of indices. If an invalid property is specified, an error is raised.
+"""
 function Base.setindex!(x::CartesianCoordinates{T, dim}, val, keys::Union{Int, Symbol, AbstractVector{Int}}) where {T <: Real, dim}
     if keys isa AbstractVector
         x.xs[keys] = val
@@ -99,6 +124,11 @@ function Base.setindex!(x::CartesianCoordinates{T, dim}, val, keys::Union{Int, S
     end
 end
 
+"""
+    function Base.resize!(x::CartesianCoordinates{T, dim}, new_dim::Int) where {T <: Real, dim}
+
+Resizes the `CartesianCoordinates{T, dim}` instance `x` to a new dimension `new_dim`. If `new_dim` is greater than the current dimension, the additional elements are set to zero. If `new_dim` is less than the current dimension, the excess elements are removed.
+"""
 function Base.resize!(x::CartesianCoordinates{T, dim}, new_dim::Int) where {T <: Real, dim}
     xs = copy(x.xs)
     resize!(xs, new_dim)
@@ -106,6 +136,11 @@ function Base.resize!(x::CartesianCoordinates{T, dim}, new_dim::Int) where {T <:
     return CartesianCoordinates(xs)
 end
 
+"""
+    function Base.propertynames(x::CartesianCoordinates{T, dim}) where {T <: Real, dim}
+
+Returns a tuple of property names for the `CartesianCoordinates{T, dim}` instance `x`. The properties include `:xs`, `:dim`, and coordinate values like `:x`, `:y`, `:z`, or `:xN` for dimensions greater than 3.
+"""
 function Base.propertynames(x::CartesianCoordinates{T, dim}) where {T <: Real, dim}
     props = Symbol[:xs, :dim]
     if dim > 0 push!(props, :x, :x1) end
@@ -117,6 +152,11 @@ function Base.propertynames(x::CartesianCoordinates{T, dim}) where {T <: Real, d
     return Tuple(props)
 end
 
+"""
+    function Base.show(io::IO, x::Coordinates)
+
+Displays the `Coordinates{T, dim}` instance `x` in a human-readable format. The output includes the type of coordinates, the type of the coordinate values, and the dimension.
+"""
 function Base.show(io::IO, x::CartesianCoordinates{T, dim}) where {T <: Real, dim}
     if x isa PlanarCoordinates
         printstyled(io, "PlanarCoordinates", bold=true, color=:light_red)
@@ -146,6 +186,12 @@ function Base.show(io::IO, x::CartesianCoordinates{T, dim}) where {T <: Real, di
     println(io, ")")
 end 
 
+"""
+    function Base.iterate(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, state::Int64=1) where {T, Tr, Tp, dim}
+
+Iterates over the properties of a `GeneralSphericalCoordinates{T, Tr, Tp, dim}` instance `s`.
+Order: `r`, `polar`, `azi`.
+"""
 function Base.iterate(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, state::Int64=1) where {T, Tr, Tp, dim}
     if state == 1
         return (s.r, state+1)
@@ -158,6 +204,11 @@ function Base.iterate(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, state::Int
     end   
 end
 
+"""
+    function Base.propertynames(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}) where {T, Tr, Tp, dim}    
+
+Returns a tuple of property names for the `GeneralSphericalCoordinates{T, Tr, Tp, dim}` instance `s`. The properties include `:r`, `:polar` (or `:θ`, `:theta`), and `:azi` (or `:φ`, `:phi`, `:azimuth`). The dimension is also included as `:dim`.
+"""
 function Base.propertynames(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}) where {T, Tr, Tp, dim} 
     props = Symbol[:r]
     if dim == 3
@@ -167,6 +218,11 @@ function Base.propertynames(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}) wher
     return Tuple(props)
 end
 
+"""
+    function Base.getproperty(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, i::Symbol) where {T, Tr, Tp, dim}
+
+Returns the value of the property `i` from the `GeneralSphericalCoordinates{T, Tr, Tp, dim}` instance `s`. The properties include `:r`, `:polar` (or `:θ`, `:theta`), and `:azi` (or `:φ`, `:phi`, `:azimuth`). The dimension is also included as `:dim`. If an invalid property is specified, an error is raised.
+"""
 function Base.getproperty(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, i::Symbol) where {T, Tr, Tp, dim}
     if i in (:θ, :theta, :polar)
         i = :polar
@@ -190,7 +246,11 @@ function Base.getproperty(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, i::Sym
     end
 end
 
+"""
+    function Base.setproperty!(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, i::Symbol, val) where {T, Tr, Tp, dim}
 
+Sets the property `i` of the `GeneralSphericalCoordinates{T, Tr, Tp, dim}` instance `s` to the value `val`. The properties include `:r`, `:polar` (or `:θ`, `:theta`), and `:azi` (or `:φ`, `:phi`, `:azimuth`). If an invalid property is specified, an error is raised.
+"""
 function Base.setproperty!(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, i::Symbol, val) where {T, Tr, Tp, dim}
     if i in (:polar, :θ, :theta)
         if dim == 3
@@ -206,7 +266,6 @@ function Base.setproperty!(s::GeneralSphericalCoordinates{T, Tr, Tp, dim}, i::Sy
         throw(error("type ", typeof(s), " has no field $i")) 
     end
 end
-
 
 Base.show(io::IO, b::SphericalCoordinates{T}) where {T <: Real} = print_type_styled(io, 
     "SphericalCoordinates", 

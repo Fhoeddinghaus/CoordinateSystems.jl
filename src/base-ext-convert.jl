@@ -1,6 +1,11 @@
 ####################
 # CONVERTERS
 ##################
+"""
+    function Base.convert(::Type{CartesianCoordinates{T1, dim1}}, x::CartesianCoordinates{T, dim}) where {T1 <: Real, dim1, T <: Real, dim}
+
+Converts a `CartesianCoordinates{T, dim}` to `CartesianCoordinates{T1, dim1}` by resizing the vector and converting the elements to type `T1`. If `dim1` is greater than `dim`, the additional elements are set to zero.
+"""
 function Base.convert(::Type{CartesianCoordinates{T1, dim1}}, x::CartesianCoordinates{T, dim}) where {T1 <: Real, dim1, T <: Real, dim}
     if T == T1
         return resize!(x, dim1)
@@ -12,6 +17,11 @@ function Base.convert(::Type{CartesianCoordinates{T1, dim1}}, x::CartesianCoordi
     end
 end
 
+"""
+    function Base.convert(::Type{Vector}, x::CartesianCoordinates{T, dim}) where {T <: Real, dim}
+
+Converts a `CartesianCoordinates{T, dim}` to a `Vector{T}` by extracting the coordinate values.
+"""
 function Base.convert(::Type{Vector}, x::CartesianCoordinates{T, dim}) where {T <: Real, dim}
     return x.xs
 end
@@ -22,6 +32,11 @@ end
 
 # 1. CartesianCoordinates:
 # 1a. GSC → CC
+"""
+    function Base.convert(::Type{T}, g::GeneralSphericalCoordinates) where {T <: CartesianCoordinates}
+
+Converts a `GeneralSphericalCoordinates` to a `CartesianCoordinates{T, dim}` where `dim` is either 2 or 3. The conversion uses the spherical coordinates to compute the Cartesian coordinates.
+"""
 function Base.convert(::Type{T}, g::GeneralSphericalCoordinates) where {T <: CartesianCoordinates}
     dim = g.dim
     if dim == 2
@@ -45,6 +60,11 @@ function Base.convert(::Type{T}, g::GeneralSphericalCoordinates) where {T <: Car
 end
 
 # 1b. CC2 → CiC, PC
+"""
+    function Base.convert(::Type{T}, x::CartesianCoordinates; truncate::Bool=false) where {T <: Union{CircleCoordinates, PolarCoordinates}}
+
+Converts a `CartesianCoordinates` with dimension 2 to either `CircleCoordinates` or `PolarCoordinates`. If `truncate` is set to `true`, the conversion projects the coordinates onto the unit circle or unit polar coordinates, respectively. If `truncate` is `false`, the conversion requires the Cartesian coordinates to have a norm close to 1.
+"""
 function Base.convert(::Type{T}, x::CartesianCoordinates; truncate::Bool=false) where {T <: Union{CircleCoordinates, PolarCoordinates}}
     dim = x.dim
     if dim != 2
@@ -72,6 +92,11 @@ function Base.convert(::Type{T}, x::CartesianCoordinates; truncate::Bool=false) 
 end
 
 # 1c. CC3 → SC, SiC
+"""
+    function Base.convert(::Type{T}, x::CartesianCoordinates; truncate::Bool=false) where {T <: Union{SphereCoordinates, SphericalCoordinates}}
+
+Converts a `CartesianCoordinates` with dimension 3 to either `SphereCoordinates` or `SphericalCoordinates`. If `truncate` is set to `true`, the conversion projects the coordinates onto the unit sphere or spherical coordinates, respectively. If `truncate` is `false`, the conversion requires the Cartesian coordinates to have a norm close to 1.
+"""
 function Base.convert(::Type{T}, x::CartesianCoordinates; truncate::Bool=false) where {T <: Union{SphereCoordinates, SphericalCoordinates}}
     dim = x.dim
     if dim != 3
@@ -103,6 +128,11 @@ end
 
 # 2. Spherical:
 # 2a. SiC ↔ SC
+"""
+    function Base.convert(::Type{SphereCoordinates}, b::SphericalCoordinates{T}; truncate::Bool=false) where {T <: Real}
+
+Converts a `SphericalCoordinates{T}` to `SphereCoordinates{T}`. If the radius `b.r` is approximately 1 or `truncate` is set to `true`, the conversion projects the coordinates onto the unit sphere. Otherwise, an error is raised.
+"""
 function Base.convert(::Type{SphereCoordinates}, b::SphericalCoordinates{T}; truncate::Bool=false) where {T <: Real}
     if b.r ≈ 1 || truncate
         return SphereCoordinates(b.polar, b.azi)
@@ -111,9 +141,19 @@ function Base.convert(::Type{SphereCoordinates}, b::SphericalCoordinates{T}; tru
     end
 end
 
+"""
+    function Base.convert(::Type{SphericalCoordinates}, s::SphereCoordinates)
+
+Converts a `SphereCoordinates` to `SphericalCoordinates`. The radius is set to 1.
+"""
 Base.convert(::Type{SphericalCoordinates}, s::SphereCoordinates) = SphericalCoordinates(1, s.polar, s.azi)
 
 # 2b. PC ↔ CiC
+"""
+    function Base.convert(::Type{CircleCoordinates}, p::PolarCoordinates{T}; truncate::Bool=false) where {T <: Real}
+
+Converts a `PolarCoordinates{T}` to `CircleCoordinates{T}`. If the radius `p.r` is approximately 1 or `truncate` is set to `true`, the conversion projects the coordinates onto the unit circle. Otherwise, an error is raised.
+"""
 function Base.convert(::Type{CircleCoordinates}, p::PolarCoordinates{T}; truncate::Bool=false) where {T <: Real}
     if p.r ≈ 1 || truncate
         return CircleCoordinates(p.azi)
@@ -122,9 +162,19 @@ function Base.convert(::Type{CircleCoordinates}, p::PolarCoordinates{T}; truncat
     end
 end
 
+"""
+    function Base.convert(::Type{PolarCoordinates}, c::CircleCoordinates)
+
+Converts a `CircleCoordinates` to `PolarCoordinates`. The radius is set to 1.
+"""
 Base.convert(::Type{PolarCoordinates}, c::CircleCoordinates) = PolarCoordinates(1, c.azi)
 
 # 2c. SiC/SC ↔ PC/CiC
+"""
+    function Base.convert(::Type{T1}, g::T2; truncate::Bool=false) where {T1 <: Union{PolarCoordinates, CircleCoordinates}, T2 <: Union{SphericalCoordinates, SphereCoordinates}}
+
+Converts `SphericalCoordinates` or `SphereCoordinates` to `PolarCoordinates` or `CircleCoordinates`. 
+"""
 function Base.convert(::Type{T1}, g::T2; truncate::Bool=false) where {T1 <: Union{PolarCoordinates, CircleCoordinates}, T2 <: Union{SphericalCoordinates, SphereCoordinates}}
     if T1 == PolarCoordinates
         g = convert(SphericalCoordinates, g)
@@ -137,6 +187,11 @@ function Base.convert(::Type{T1}, g::T2; truncate::Bool=false) where {T1 <: Unio
     end
 end
 
+"""
+    function Base.convert(::Type{T1}, g::T2; truncate::Bool=false) where {T1 <: Union{SphericalCoordinates, SphereCoordinates}, T2 <: Union{PolarCoordinates, CircleCoordinates}}
+
+Converts `PolarCoordinates` or `CircleCoordinates` to `SphericalCoordinates` or `SphereCoordinates`.
+"""
 function Base.convert(::Type{T1}, g::T2; truncate::Bool=false) where {T1 <: Union{SphericalCoordinates, SphereCoordinates}, T2 <: Union{PolarCoordinates, CircleCoordinates}}
     if T1 == SphericalCoordinates
         g = convert(PolarCoordinates, g)
