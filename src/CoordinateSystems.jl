@@ -6,7 +6,8 @@ import Base: show, convert, length, getproperty, setproperty!, propertynames, it
 export 
     Coordinates, CartesianCoordinates, PlanarCoordinates, SpatialCoordinates, GeneralSphericalCoordinates, SphericalCoordinates, SphereCoordinates, PolarCoordinates, CircleCoordinates,
 
-    trunc_dim
+    trunc_dim,
+    print_type_styled
 
 
 
